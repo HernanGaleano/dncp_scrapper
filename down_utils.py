@@ -9,7 +9,7 @@ import os
 import errno
 import time
 from pathlib import Path
-
+import shutil
 
 def make_path(path):
     try:
@@ -53,3 +53,30 @@ def wait_rename(dest_path, directory, timeout = 30):
     
     return dl_complete
             
+
+def copiar_PBC(path_PBC, dest_path):
+    """
+    Wait for downloads to finish with a specified timeout.
+
+    Args
+    ----
+    dest_path: int, defaults to None
+        The path to the destination folder.
+    directory : str
+        The path to the folder where the files will be downloaded.
+    timeout : int
+        How many seconds to wait until timing out.
+    
+    """
+    
+    PBC_copiado = False
+    files = []
+    files = sorted(path_PBC.glob('*'))
+    
+    if files != []:
+        #dest_path = dest_path + os.path.basename(files[0])
+        shutil.copy2(files[0], dest_path)
+        #os.rename(files[0], dest_path)
+        PBC_copiado = True
+        
+    return PBC_copiado
