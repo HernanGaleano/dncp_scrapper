@@ -58,8 +58,10 @@ while existe_siguiente_pagina == True:
     ### Resultado de busqueda
     xp_nombres_licit = '//*[@id="licitaciones"]/ul/li/article/header/h3/a'
     xp_etapas_licit = '//*[@id="licitaciones"]/ul/li/article/div/div[1]/div[1]/div[2]/em'
+    xp_id_licit = '//*[@id="licitaciones"]/ul/li/article/div/div[1]/div[1]/div[1]/em'
     nombres_licitacion = driver.find_elements_by_xpath(xp_nombres_licit)
     etapas_licit = driver.find_elements_by_xpath(xp_etapas_licit)
+    id_licit = driver.find_elements_by_xpath(xp_id_licit)
     
     
     ## Hacer esto cada vez que se vuelve a la lista de resultados
@@ -68,6 +70,11 @@ while existe_siguiente_pagina == True:
     #    print(i)
     #    print(etapa)
     #    print(etapa.text)
+        
+        lista_anterior = [item['id_licitacion'] for item in solo_licitacion if item['id_licitacion'] == id_licit[i].text]
+        if lista_anterior != []:
+            continue
+    
         etapa_texto = etapa.text
         print(str(i) + ' - ' + nombres_licitacion[i].text + ' - ' + etapa_texto)
         
@@ -110,13 +117,11 @@ driver.close()
 
 
 #dff = pd.DataFrame(solo_licitacion, columns=['id_licitacion', 'nombre_licitacion', 'fecha_publicacion', 'estado', 'monto', 'sistema_adjudicacion'])
-dff = pd.DataFrame(solo_licitacion)
-dff.to_csv(os.getcwd() + '\\docs\\'+ convocante + '\\solo_lic.csv', encoding='utf-8',index=False)
-dff.to_excel(os.getcwd() + '\\docs\\'+ convocante + '\\solo_lic.xlsx')
+licitaciones_panda = pd.DataFrame(solo_licitacion)
+contratos_panda = pd.DataFrame(solo_contratos)
 
+file_xlsx = os.getcwd() + '\\docs\\'+ convocante + '\\' + 'resumen.xlsx'
 
-df = pd.DataFrame(solo_contratos)
-df.to_csv(os.getcwd() + '\\docs\\'+ convocante + '\\solo_contratos.csv', encoding='utf-8',index=False)
-df.to_excel(os.getcwd() + '\\docs\\'+ convocante + '\\solo_contratos.xlsx')
-
-#https://www.contrataciones.gov.py/buscador/licitaciones.html?nro_nombre_licitacion=&convocantes%5B0%5D=196&fecha_desde=&fecha_hasta=&tipo_fecha=&marcas%5B0%5D=fonacide&convocante_tipo=&convocante_nombre_codigo=&codigo_contratacion=&catalogo%5Bcodigos_catalogo_n4%5D=&catalogo%5Bcodigos_catalogo_n4_label%5D=&page=5&order=&convocante_codigos=&convocante_tipo_codigo=&unidad_contratacion_codigo=
+with pd.ExcelWriter(file_xlsx) as writer:  # doctest: +SKIP
+    licitaciones_panda.to_excel(writer, index = False, sheet_name = 'licitaciones')
+    contratos_panda.to_excel(writer, index = False, sheet_name = 'contratos')

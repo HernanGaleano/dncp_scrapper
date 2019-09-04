@@ -82,12 +82,12 @@ def guardar_datos(driver, step):
         }
     elif step == 'planificacion':
         datos={
-        'id_licitacion' : '//*[@id="datos_' + step + '"]/section[1]/div/div/div[1]/div[2]/em',
-        'nombre_licitacion' : '//*[@id="datos_' + step + '"]/section[1]/div/div/div[1]/div[4]/em',
-        'convocante' : '//*[@id="datos_' + step + '"]/section[1]/div/div/div[2]/div[2]',
-        'estado' : '//*[@id="datos_' + step + '"]/section[1]/div/div/div[5]/div[2]/em',
-        'monto' : '//*[@id="datos_' + step + '"]/div[3]/div[1]/section/div/div/div[1]/div[2]',
-        'fecha_publicacion' : '//*[@id="datos_' + step + '"]/section[1]/div/div/div[5]/div[4]',
+        'id_licitacion' : '//*[@id="datos_planificacion"]/section/div/div/div[1]/div[2]/em',
+        'nombre_licitacion' : '//*[@id="datos_planificacion"]/section/div/div/div[2]/div[2]/em',
+        'convocante' : '//*[@id="datos_planificacion"]/section/div/div/div[3]/div[2]',
+        'estado' : '//*[@id="datos_planificacion"]/section/div/div/div[7]/div[2]/em',
+        'monto' : '//*[@id="datos_planificacion"]/section/div/div/div[8]/div[2]',
+        'fecha_publicacion' : '//*[@id="datos_planificacion"]/section/div/div/div[10]/div[2]',
         #'sistema_adjudicacion' : '//*[@id="datos_' + step + '"]/section[1]/div/div/div[4]/div[2]',
         }    
     licitacion = {} 
@@ -98,6 +98,16 @@ def guardar_datos(driver, step):
         except:
             licitacion.update({key:''})
             pass
+   
+    #A veces la planificacion varia en cantidad de campos
+    if step == 'planificacion' and licitacion["fecha_publicacion"] == '':
+        xp_div = '//*[@id="datos_planificacion"]/section/div/div'
+        div = driver.find_element_by_xpath(xp_div)
+        rows = div.find_elements_by_class_name("row")
+        rows = [item.text for item in rows]
+        fecha = [item for item in rows if "Fecha" in item]
+        fecha = fecha[0].split("\n")[1]
+        licitacion.update({'fecha_publicacion' : fecha})
     return(licitacion)
 
 def PBC(driver):
@@ -208,7 +218,7 @@ def obtener_datos(driver):
     #guardar datos y termina la funcion (se hace siempre)
     licitacion = guardar_datos(driver, step)
     licitacion.update({'URL_lic' : driver.current_url})
-    
+   # import pdb; pdb.set_trace()
     #Verificar tags
     tag = 'Plurianual'
     licitacion.update({tag : leer_tags(driver, step, tag)})
@@ -221,17 +231,18 @@ def obtener_datos(driver):
     
     print('Datos de licitación guardados')
     
-    dest_path = (os.getcwd() +
-                 '\\docs\\' + 
-                 licitacion['convocante'] + 
-                 '\\' + 
-                 re.search("(\d{4})", licitacion['fecha_publicacion']).group(0) +
-                 '\\' +
-                 licitacion['id_licitacion'] + ' ' +            
-                 re.search("(\d{4})", licitacion['fecha_publicacion']).group(0) + 
-                 '\\') 
-    #Asegurar que la carpeta de licitacion existe
-    down_utils.make_path(dest_path)
+    if step != 'planificacion':
+        dest_path = (os.getcwd() +
+                     '\\docs\\' + 
+                     licitacion['convocante'] + 
+                     '\\' + 
+                     re.search("(\d{4})", licitacion['fecha_publicacion']).group(0) +
+                     '\\' +
+                     licitacion['id_licitacion'] + ' ' +            
+                     re.search("(\d{4})", licitacion['fecha_publicacion']).group(0) + 
+                     '\\') 
+        #Asegurar que la carpeta de licitacion existe
+        down_utils.make_path(dest_path)
     
     if step == 'convocatoria':
         #funcion PBC: ir a documentos -> descargar PBC
